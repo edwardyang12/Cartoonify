@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import torchvision.transforms.functional as F
 import itertools
 from torch.autograd import Variable
