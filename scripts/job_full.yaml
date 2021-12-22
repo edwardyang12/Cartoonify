@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: edward-psmnet-primnoir  # Replace with something like "${USER_NAME}-{EXP_NAME}"
+  namespace: ucsd-haosulab
+spec:
+  ttlSecondsAfterFinished: 86400  # Wait one day to delete completed jobs
+  template:
+    spec:
+      containers:
+        - name: gpu-container
+          image: isabella98/pix2pix:latest
+          # imagePullPolicy: Always
+          command:
+            - "sh"
+            - "-c"
+          args:
+            - "apt-get update
+            && apt install git -y
+            && git clone -b tests2 https://github.com/edwardyang12/StereoGAN.git
+            && cd StereoGAN
+            && git checkout 76a27f90d2f01b52ebbb6898f1c644f1708002c0
+            && export NGPUS=2
+            && python -m torch.distributed.launch --nproc_per_node=$NGPUS train_psmnet.py --config-file ./configs/remote_train_steps.yaml --logdir /edward-slow-vol/checkpoints/11_15_psmnet_primnoir
+      "
+          resources:
+            requests:
+              cpu: "6"
+              memory: "13Gi"
+              nvidia.com/gpu: "2"
+            limits:
+              cpu: "7"
+              memory: "16Gi"
+              nvidia.com/gpu: "2"
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: cephfs
+              mountPath: /cephfs
+            - name: edward-slow-vol
+              mountPath: /edward-slow-vol
+      volumes:
+        - name: dshm  # shared memory, required for the multi-worker dataloader
+          emptyDir:
+            medium: Memory
+        - name: cephfs
+          persistentVolumeClaim:
+            claimName: haosulab-cephfs
+        - name: edward-slow-vol
+          persistentVolumeClaim:
+            claimName: edward-slow-vol
+      restartPolicy: Never
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      # - k8s-haosu-10.sdsc.optiputer.net
+                      - k8s-haosu-16.sdsc.optiputer.net
+                  - key: nautilus.io/group
+                    operator: In
+                    values:
+                      - haosu
+                  - key: gpu-type
+                    operator: In
+                    values:
+                      - 1080Ti
+                      - 2080Ti
+  backoffLimit: 0  # The number of attempts to restart after crash
