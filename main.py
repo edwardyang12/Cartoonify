@@ -36,10 +36,16 @@ device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
 
 netG_A2B = Generator().to(device)
 netG_B2A = Generator().to(device)
-
+if (device.type == 'cuda') and (ngpu > 1):
+    netG_A2B = nn.DataParallel(netG_A2B, list(range(ngpu)))
+    netG_B2A = nn.DataParallel(netG_B2A, list(range(ngpu)))
 
 netD_A = Discriminator().to(device)
 netD_B = Discriminator().to(device)
+
+if (device.type == 'cuda') and (ngpu > 1):
+    netD_A = nn.DataParallel(netD_A, list(range(ngpu)))
+    netD_B = nn.DataParallel(netD_B, list(range(ngpu)))
 
 netD_A.apply(weights_init)
 netD_B.apply(weights_init)
