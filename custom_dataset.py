@@ -1,10 +1,12 @@
 import os
 from torch.utils.data import Dataset
 import torch
-from PIL import Image
+from PIL import Image, ImageFile
 import numpy as np
 import random
 import pandas as pd
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 def normalize(image):
