@@ -6,6 +6,7 @@ from PIL import Image
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import sys
 
 from nets.utils import ReplayBuffer, weights_init
 from nets.discriminator import PatchGAN as Discriminator
@@ -13,16 +14,17 @@ from nets.generator import MiniUnet as Generator
 from custom_dataset import CustomDataset
 
 lr = 0.0002
-num_epochs = 30
-batch_size = 10
+num_epochs = int(sys.argv[2])
+batch_size = 4
 beta1 = 0.5
 num_workers = 0
-ngpu = 1
+ngpu = int(sys.argv[1])
 patch = 128 # patch size
 size = 256
 
-datapath = "./data/list_real.csv"
-simpath = "./data/list_fake.csv"
+datapath = "./data/list_faces.csv"
+simpath = "./data/list_cartoon.csv"
+savedir = "/edward-slow-vol/cycleGAN/"
 
 dataset = CustomDataset(datapath, simpath, size)
 
@@ -79,7 +81,7 @@ for epoch in range(num_epochs):
     # For each batch in the dataloader
     start = time.time()
     for i, data in enumerate(dataloader):
-
+        i = i*batch_size
         simdata, simpath, data, path = data
 
         b_size,channels,h,w = data.shape
@@ -194,23 +196,23 @@ for epoch in range(num_epochs):
             img = img.detach().cpu().numpy()
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
-            img.save('real'+str(epoch)+'_'+str(i)+'.png')
+            img.save(savedir + 'real'+str(epoch)+'_'+str(i)+'.png')
 
             img = ((real_B[0]*0.5)+0.5)*255.
             img = img.detach().cpu().numpy()
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
-            img.save('sim'+str(epoch)+'_'+str(i)+'.png')
+            img.save(savedir + 'sim'+str(epoch)+'_'+str(i)+'.png')
 
             img = ((fake_A[0]*0.5)+0.5)*255.
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
-            img.save('fakeReal'+str(epoch)+'_'+str(i)+'.png')
+            img.save(savedir + 'fakeReal'+str(epoch)+'_'+str(i)+'.png')
 
             img = ((fake_B[0]*0.5)+0.5)*255.
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
-            img.save('fakeSim'+str(epoch)+'_'+str(i)+'.png')
+            img.save(savedir + 'fakeSim'+str(epoch)+'_'+str(i)+'.png')
 
             print(simpath[0], path[0])
 
@@ -229,4 +231,4 @@ plt.xlabel("iterations")
 plt.ylabel("Loss")
 plt.legend()
 plt.ylim(0,20)
-plt.savefig('lossgraph.png')
+plt.savefig(savedir + 'lossgraph.png')

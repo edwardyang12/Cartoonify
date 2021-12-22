@@ -15,7 +15,7 @@ def normalize(image):
     x = x.type(torch.float32)
     x = x.permute(-1,0,1)
     x = (x - MEAN[:, None, None]) / STD[:, None, None]
-    return x/255.
+    return x
 
 class CustomDataset(Dataset):
     def __init__(self, facespath, carpath, size):
@@ -39,5 +39,4 @@ class CustomDataset(Dataset):
         temp = random.randrange(0,len(self.cartoon))
         cartoon, rName = self.load_image(self.cartoon, temp)
         cartoon = normalize(cartoon)
-
         return faces, name, cartoon, rName
