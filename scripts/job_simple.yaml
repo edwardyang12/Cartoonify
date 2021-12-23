@@ -20,17 +20,17 @@ spec:
             && pip install pandas
             && git clone https://github.com/edwardyang12/Cartoonify.git
             && cd Cartoonify
-            && python -u main1.py 10 40 4 4 /edward-slow-vol/cycleGAN/simple128/
+            && python -u main1.py 10 50 3 3 /edward-slow-vol/cycleGAN/simple128/
       "
           resources:
             requests:
               cpu: "4"
               memory: "13Gi"
-              nvidia.com/gpu: "4"
+              nvidia.com/gpu: "3"
             limits:
               cpu: "5"
               memory: "16Gi"
-              nvidia.com/gpu: "4"
+              nvidia.com/gpu: "3"
           volumeMounts:
             - name: dshm
               mountPath: /dev/shm
