@@ -12,7 +12,7 @@ import sys
 from nets.utils import weights_init
 from nets.discriminator import PatchGAN as Discriminator
 from nets.generator import MiniUnet as Generator
-from custom_dataset1 import CustomDataset
+from custom_dataset import CustomDataset
 
 lr = 0.0002
 num_epochs = int(sys.argv[1])
@@ -20,12 +20,12 @@ batch_size = int(sys.argv[2])
 beta1 = 0.5
 num_workers = int(sys.argv[3])
 ngpu = int(sys.argv[4])
-patch = 128 # patch size
+patch = 64 # patch size
 size = 256
 
 datapath = "./data/list_faces.csv"
 simpath = "./data/list_cartoon.csv"
-savedir = "/edward-slow-vol/cycleGAN/"
+savedir = sys.argv[5] # /edward-slow-vol/cycleGAN/simple/
 
 dataset = CustomDataset(datapath, simpath, size)
 
@@ -36,10 +36,8 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
 device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
 
 netG = Generator().to(device)
-# netG.apply(weights_init)
 if (device.type == 'cuda') and (ngpu > 1):
     netG = nn.DataParallel(netG, list(range(ngpu)))
-netG.apply(weights_init)
 
 netD = Discriminator().to(device)
 if (device.type == 'cuda') and (ngpu > 1):
@@ -53,8 +51,12 @@ real_label = 1.
 fake_label = 0.
 
 # Setup Adam optimizers for both G and D
-optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
-optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
+optimizerD = torch.optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
+optimizerG = torch.optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
+
+Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.Tensor
+input_A = Tensor(batch_size, 3, size, size)
+input_B = Tensor(batch_size, 3, size, size)
 
 G_losses = []
 D_losses = []
@@ -79,9 +81,9 @@ for epoch in range(num_epochs):
         ## Train with all-real batch
         netD.zero_grad()
 
-        b_size,channels,h,w = real_cpu.shape
+        b_size,channels,h,w = real_B.shape
 
-        label = torch.full((b_size, 3,14,14), real_label, dtype=torch.float, device=device)
+        label = torch.full((b_size, 3,6,6), real_label, dtype=torch.float, device=device)
 
         # Forward pass real batch through D
 
