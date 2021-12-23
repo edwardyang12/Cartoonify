@@ -21,8 +21,8 @@ batch_size = int(sys.argv[2])
 beta1 = 0.5
 num_workers = int(sys.argv[3])
 ngpu = int(sys.argv[4])
-patch = 128 # patch size
-size = 256
+patch = 256 # patch size
+size = 512
 
 datapath = "./data/list_faces.csv"
 simpath = "./data/list_cartoon.csv"
@@ -73,8 +73,8 @@ input_A = Tensor(batch_size, 3, size, size)
 input_B = Tensor(batch_size, 3, size, size)
 
 # (30,30) for 256, (14,14) for 128, (6,6) for 64
-target_real = torch.full((batch_size,3,14,14), real_label, dtype=torch.float, device=device) # 30 x 30 because crop size was 256 with PatchGAN
-target_fake = torch.full((batch_size,3,14,14), fake_label, dtype=torch.float, device=device) # should be 14 x 14 for patch 128
+target_real = torch.full((batch_size,3,30,30), real_label, dtype=torch.float, device=device) 
+target_fake = torch.full((batch_size,3,30,30), fake_label, dtype=torch.float, device=device)
 
 fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()

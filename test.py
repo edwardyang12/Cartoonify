@@ -1,13 +1,27 @@
 import torch
+import torchvision.transforms.functional as F
+import itertools
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
-from nets.generator import OrigGenerator as Generator
+# from nets.generator import MiniUnet as Generator
+from nets.newgenerator import ResnetGenerator as Generator
+from custom_dataset import TestDataset
+
+size = 256
+
+datapath = "./data/list_test_faces.csv"
+savedir = sys.argv[1] # "/edward-slow-vol/cycleGAN/test/"
+
+dataset = TestDataset(datapath,size)
+
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 
 load = True
 size = 128
-path = 'carolGAN.pth' # generator model is saved here
+path = '/edward-slow-vol/cycleGAN/cycle128/cycleGAN49.pth' # generator model is saved here
 
 netG = Generator()
 if(load):
@@ -15,12 +29,14 @@ if(load):
     netG.load_state_dict(checkpoint['state_dict'])
     print('loaded successfully')
 
-fixed_noise = torch.randn(64, 3, 1, 1) # distribution sampler
+for i, data in enumerate(dataloader):
+    simdata, simpath, = data
+    b_size,channels,h,w = simdata.shape
 
-with torch.no_grad():
-    fake = netG(fixed_noise).numpy()
-
-img = ((fake[0]*0.5)+0.5)*255.
-img = img.transpose(1,2,0)
-img = Image.fromarray(img.astype(np.uint8),'RGB')
-img.save('newpic.png')
+    with torch.no_grad():
+        fake = netG(simdata).numpy()
+    img = ((fake[0]*0.5)+0.5)*255.
+    img = img.transpose(1,2,0)
+    img = Image.fromarray(img.astype(np.uint8),'RGB')
+    img.save(savedir+'fake'+i+'.png')
+    print(simpath)
