@@ -138,28 +138,32 @@ for epoch in range(num_epochs):
         optimizerG.step()
 
 
-    # Output training stats
-    if i % 1000 == 0:
-        print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
-                % (epoch, num_epochs, i, len(dataloader),
-                errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
+        # Output training stats
+        if i % 1000 == 0:
+            print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
+                    % (epoch, num_epochs, i, len(dataloader),
+                    errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
 
-        print(time.time()-start)
-        start = time.time()
+            print(time.time()-start)
+            start = time.time()
 
-    if i % 1000 == 0 or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
-        with torch.no_grad():
-            fake = netG(real_B).detach().cpu().numpy()
+        if i % 1000 == 0 or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+            with torch.no_grad():
+                fake = netG(real_B).detach().cpu().numpy()
 
-        img = ((fake[0]*0.5)+0.5)*255.
-        img = img.transpose(1,2,0)
-        img = Image.fromarray(img.astype(np.uint8),'RGB')
-        img.save(savedir+'fake'+str(epoch)+'_'+str(i)+'.png')
-        print(simpath[0], path[0])
+            img = ((fake[0]*0.5)+0.5)*255.
+            img = img.transpose(1,2,0)
+            img = Image.fromarray(img.astype(np.uint8),'RGB')
+            img.save(savedir+'fake'+str(epoch)+'_'+str(i)+'.png')
+            print(simpath[0], path[0])
 
-    # Save Losses for plotting later
-    G_losses.append(errG.item())
-    D_losses.append(errD.item())
+        # Save Losses for plotting later
+        G_losses.append(errG.item())
+        D_losses.append(errD.item())
+    filename = savedir + 'simpleGAN' + str(epoch) + '.pth'
+    state = {'state_dict': netG.state_dict()}
+    torch.save(state, filename)
+    print('saved')
 
 # loss graph
 plt.figure(figsize=(10,5))
@@ -170,5 +174,5 @@ plt.plot(D_losses,label="D")
 plt.xlabel("iterations")
 plt.ylabel("Loss")
 plt.legend()
-plt.ylim(0,20)
+plt.ylim(0,10)
 plt.savefig(savedir + 'lossgraph.png')

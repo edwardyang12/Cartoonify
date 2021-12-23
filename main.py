@@ -21,7 +21,7 @@ batch_size = int(sys.argv[2])
 beta1 = 0.5
 num_workers = int(sys.argv[3])
 ngpu = int(sys.argv[4])
-patch = 64 # patch size
+patch = 128 # patch size
 size = 256
 
 datapath = "./data/list_faces.csv"
@@ -73,8 +73,8 @@ input_A = Tensor(batch_size, 3, size, size)
 input_B = Tensor(batch_size, 3, size, size)
 
 # (30,30) for 256, (14,14) for 128, (6,6) for 64
-target_real = torch.full((batch_size,3,6,6), real_label, dtype=torch.float, device=device) # 30 x 30 because crop size was 256 with PatchGAN
-target_fake = torch.full((batch_size,3,6,6), fake_label, dtype=torch.float, device=device) # should be 14 x 14 for patch 128
+target_real = torch.full((batch_size,3,14,14), real_label, dtype=torch.float, device=device) # 30 x 30 because crop size was 256 with PatchGAN
+target_fake = torch.full((batch_size,3,14,14), fake_label, dtype=torch.float, device=device) # should be 14 x 14 for patch 128
 
 fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
@@ -230,6 +230,10 @@ for epoch in range(num_epochs):
         D_losses.append((loss_D_A + loss_D_B).item())
         G_GAN_losses.append((loss_GAN_A2B + loss_GAN_B2A).item())
 
+    filename = savedir + 'cycleGAN' + str(epoch) + '.pth'
+    state = {'state_dict': netG_B2A.state_dict()}
+    torch.save(state, filename)
+    print('saved')
 
 # loss graph
 plt.figure(figsize=(10,5))
@@ -240,5 +244,5 @@ plt.plot(D_losses,label="D")
 plt.xlabel("iterations")
 plt.ylabel("Loss")
 plt.legend()
-plt.ylim(0,20)
+plt.ylim(0,10)
 plt.savefig(savedir + 'lossgraph.png')
