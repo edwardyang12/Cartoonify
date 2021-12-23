@@ -94,8 +94,8 @@ for epoch in range(num_epochs):
 
         b_size,channels,h,w = data.shape
 
-        real_A = Variable(input_A.copy_(data))
-        real_B = Variable(input_B.copy_(simdata))
+        real_A = Variable(input_A.copy_(data)) # cartoon
+        real_B = Variable(input_B.copy_(simdata)) # faces
 
         ###### Generators A2B and B2A ######
         optimizer_G.zero_grad()
@@ -113,14 +113,14 @@ for epoch in range(num_epochs):
         fake_B = netG_A2B(real_A)
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_fake_B = F.crop(fake_B.detach(), top, left, patch, patch)
+        cropped_fake_B = F.crop(fake_B, top, left, patch, patch)
         pred_fake = netD_B(cropped_fake_B)
         loss_GAN_A2B = criterion_GAN(pred_fake, target_real)
 
         fake_A = netG_B2A(real_B)
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_fake_A = F.crop(fake_A.detach(), top, left, patch, patch)
+        cropped_fake_A = F.crop(fake_A, top, left, patch, patch)
         pred_fake = netD_A(cropped_fake_A)
         loss_GAN_B2A = criterion_GAN(pred_fake, target_real)
 
@@ -144,7 +144,7 @@ for epoch in range(num_epochs):
         # Real loss
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_real_A = F.crop(real_A.detach(), top, left, patch, patch)
+        cropped_real_A = F.crop(real_A, top, left, patch, patch)
         pred_real = netD_A(cropped_real_A)
         loss_D_real = criterion_GAN(pred_real, target_real)
 
@@ -169,7 +169,7 @@ for epoch in range(num_epochs):
         # Real loss
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_real_B = F.crop(real_B.detach(), top, left, patch, patch)
+        cropped_real_B = F.crop(real_B, top, left, patch, patch)
         pred_real = netD_B(cropped_real_B)
         loss_D_real = criterion_GAN(pred_real, target_real)
 

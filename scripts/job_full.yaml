@@ -20,7 +20,7 @@ spec:
             && pip install pandas
             && git clone https://github.com/edwardyang12/Cartoonify.git
             && cd Cartoonify
-            && python main.py 4 20 4 4
+            && python -u main.py 4 20 4 4
       "
           resources:
             requests:
