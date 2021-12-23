@@ -20,7 +20,7 @@ batch_size = int(sys.argv[2])
 beta1 = 0.5
 num_workers = int(sys.argv[3])
 ngpu = int(sys.argv[4])
-patch = 64 # patch size
+patch = 128 # patch size
 size = 256
 
 datapath = "./data/list_faces.csv"
@@ -83,7 +83,7 @@ for epoch in range(num_epochs):
 
         b_size,channels,h,w = real_B.shape
 
-        label = torch.full((b_size, 3,6,6), real_label, dtype=torch.float, device=device)
+        label = torch.full((b_size, 3,14,14), real_label, dtype=torch.float, device=device)
 
         # Forward pass real batch through D
 
@@ -155,7 +155,11 @@ for epoch in range(num_epochs):
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
             img.save(savedir+'fake'+str(epoch)+'_'+str(i)+'.png')
-            print(simpath[0], path[0])
+            img = ((real_B[0]*0.5)+0.5)*255.
+            img = img.transpose(1,2,0)
+            img = Image.fromarray(img.astype(np.uint8),'RGB')
+            img.save(savedir+'real'+str(epoch)+'_'+str(i)+'.png')
+            print(simpath[0])
 
         # Save Losses for plotting later
         G_losses.append(errG.item())
@@ -169,7 +173,6 @@ for epoch in range(num_epochs):
 plt.figure(figsize=(10,5))
 plt.title("Generator and Discriminator Loss During Training")
 plt.plot(G_losses,label="G")
-plt.plot(G_GAN_losses,label="G_GAN")
 plt.plot(D_losses,label="D")
 plt.xlabel("iterations")
 plt.ylabel("Loss")
