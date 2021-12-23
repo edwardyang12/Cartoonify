@@ -155,7 +155,8 @@ for epoch in range(num_epochs):
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
             img.save(savedir+'fake'+str(epoch)+'_'+str(i)+'.png')
-            img = ((real_B[0]*0.5)+0.5)*255.
+            real = real_B.detach().cpu().numpy()
+            img = ((real[0]*0.5)+0.5)*255.
             img = img.transpose(1,2,0)
             img = Image.fromarray(img.astype(np.uint8),'RGB')
             img.save(savedir+'real'+str(epoch)+'_'+str(i)+'.png')
