@@ -11,15 +11,16 @@ import sys
 
 from nets.utils import ReplayBuffer, weights_init
 from nets.discriminator import PatchGAN as Discriminator
-from nets.generator import MiniUnet as Generator
+# from nets.generator import MiniUnet as Generator
+from nets.newgenerator import ResnetGenerator as Generator
 from custom_dataset import CustomDataset
 
 lr = 0.0002
 num_epochs = int(sys.argv[1])
 batch_size = int(sys.argv[2])
 beta1 = 0.5
-num_workers = 0
-ngpu = int(sys.argv[3])
+num_workers = int(sys.argv[3])
+ngpu = int(sys.argv[4])
 patch = 128 # patch size
 size = 256
 
