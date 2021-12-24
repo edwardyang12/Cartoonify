@@ -23,7 +23,7 @@ class CustomDataset(Dataset):
                 std=[0.229, 0.224, 0.225],
             ),
             Transforms.RandomHorizontalFlip(),
-            Transforms.ColorJitter(brightness=.3, contrast=.3,saturation=.3),
+            Transforms.ColorJitter(brightness=.1, contrast=.1,saturation=.1),
         ]
         custom_augmentation = Transforms.Compose(transform_list)
         return custom_augmentation
