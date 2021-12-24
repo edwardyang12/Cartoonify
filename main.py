@@ -21,12 +21,12 @@ batch_size = int(sys.argv[2])
 beta1 = 0.5
 num_workers = int(sys.argv[3])
 ngpu = int(sys.argv[4])
-patch = 256 # patch size
-size = 512
+patch = int(sys.argv[5])
+size = int(sys.argv[6])
 
 datapath = "./data/list_faces.csv"
 simpath = "./data/list_cartoon.csv"
-savedir = sys.argv[5] # "/edward-slow-vol/cycleGAN/cycle/"
+savedir = sys.argv[7] # "/edward-slow-vol/cycleGAN/cycle/"
 
 dataset = CustomDataset(datapath, simpath, size)
 
@@ -73,8 +73,16 @@ input_A = Tensor(batch_size, 3, size, size)
 input_B = Tensor(batch_size, 3, size, size)
 
 # (30,30) for 256, (14,14) for 128, (6,6) for 64
-target_real = torch.full((batch_size,3,30,30), real_label, dtype=torch.float, device=device) 
-target_fake = torch.full((batch_size,3,30,30), fake_label, dtype=torch.float, device=device)
+out_size = 0
+if patch==256:
+    out_size = 30
+elif patch== 128:
+    out_size = 14
+elif patch== 64:
+    out_size = 6
+
+target_real = torch.full((batch_size,3,out_size,out_size), real_label, dtype=torch.float, device=device)
+target_fake = torch.full((batch_size,3,out_size,out_size), fake_label, dtype=torch.float, device=device)
 
 fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
