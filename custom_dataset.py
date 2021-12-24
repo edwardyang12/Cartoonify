@@ -23,7 +23,7 @@ class CustomDataset(Dataset):
                 std=255.*np.array([0.229, 0.224, 0.225]),
             ),
             Transforms.RandomHorizontalFlip(),
-            Transforms.ColorJitter(brightness=.1, contrast=.1,saturation=.1),
+            Transforms.ColorJitter(brightness=.2),
         ]
         custom_augmentation = Transforms.Compose(transform_list)
         return custom_augmentation
@@ -33,9 +33,9 @@ class CustomDataset(Dataset):
         temp = Image.open(name).convert('RGB')
         if cartoon: # because the cartoon face has a lot of white space
             w, h = temp.size
-            w_sub = w*.1
-            h_sub = h*.1
-            temp = temp.crop((w_sub,h_sub,w-w_sub,h-h_sub))
+            w_sub = w*.15
+            h_sub = h*.10
+            temp = temp.crop((w_sub,h_sub,w-w_sub,h-h_sub*2))
         temp = temp.resize((self.size,self.size), resample=Image.BICUBIC)
         return np.array(temp).astype(np.float32), name
     def __len__(self):
@@ -45,8 +45,10 @@ class CustomDataset(Dataset):
         transform = self.data_aug()
         faces, name = self.load_image(self.faces, index)
         faces = transform(faces)
+
         temp = random.randrange(0,len(self.cartoon))
         cartoon, rName = self.load_image(self.cartoon, temp, cartoon=True)
+        transform = self.data_aug()
         cartoon = transform(cartoon)
         return faces, name, cartoon, rName
 
