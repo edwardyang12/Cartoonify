@@ -19,8 +19,8 @@ class CustomDataset(Dataset):
         transform_list = [
             Transforms.ToTensor(),
             Transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
+                mean=255.*np.array([0.485, 0.456, 0.406]),
+                std=255.*np.array([0.229, 0.224, 0.225]),
             ),
             Transforms.RandomHorizontalFlip(),
             Transforms.ColorJitter(brightness=.3, contrast=.3,saturation=.3),
