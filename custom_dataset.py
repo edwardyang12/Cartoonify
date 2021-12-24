@@ -46,7 +46,6 @@ class CustomDataset(Dataset):
 class TestDataset(Dataset):
     def __init__(self, facespath, size):
         self.faces = pd.read_csv(facespath)
-        self.cartoon = pd.read_csv(carpath)
         self.size = size
 
     def load_image(self, filename, index):
