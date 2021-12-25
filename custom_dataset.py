@@ -18,12 +18,12 @@ class CustomDataset(Dataset):
     def data_aug(self):
         transform_list = [
             Transforms.ToTensor(),
+            Transforms.ColorJitter(brightness=.2),
             Transforms.Normalize(
-                mean=255.*np.array([0.485, 0.456, 0.406]),
-                std=255.*np.array([0.229, 0.224, 0.225]),
+                mean=255.*np.array([0.5, 0.5, 0.5]),
+                std=255.*np.array([0.5, 0.5, 0.5]),
             ),
             Transforms.RandomHorizontalFlip(),
-            Transforms.ColorJitter(brightness=.2),
         ]
         custom_augmentation = Transforms.Compose(transform_list)
         return custom_augmentation
@@ -34,8 +34,8 @@ class CustomDataset(Dataset):
         if cartoon: # because the cartoon face has a lot of white space
             w, h = temp.size
             w_sub = w*.15
-            h_sub = h*.10
-            temp = temp.crop((w_sub,h_sub,w-w_sub,h-h_sub*2))
+            h_sub = h*.15
+            temp = temp.crop((w_sub,h_sub,w-w_sub,h-h_sub))
         temp = temp.resize((self.size,self.size), resample=Image.BICUBIC)
         return np.array(temp).astype(np.float32), name
     def __len__(self):
