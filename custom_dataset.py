@@ -19,11 +19,11 @@ class CustomDataset(Dataset):
         transform_list = [
             Transforms.ToTensor(),
             Transforms.ColorJitter(brightness=.2),
-            Transforms.Normalize(
-                mean=255.*np.array([0.5, 0.5, 0.5]),
-                std=255.*np.array([0.5, 0.5, 0.5]),
-            ),
             Transforms.RandomHorizontalFlip(),
+            Transforms.Normalize(
+                mean=np.array([0.5, 0.5, 0.5]),
+                std=np.array([0.5, 0.5, 0.5]),
+            ),
         ]
         custom_augmentation = Transforms.Compose(transform_list)
         return custom_augmentation
@@ -37,7 +37,8 @@ class CustomDataset(Dataset):
             h_sub = h*.15
             temp = temp.crop((w_sub,h_sub,w-w_sub,h-h_sub))
         temp = temp.resize((self.size,self.size), resample=Image.BICUBIC)
-        return np.array(temp).astype(np.float32), name
+        return temp, name
+
     def __len__(self):
         return len(self.faces)
 
@@ -61,7 +62,7 @@ class TestDataset(Dataset):
         name = filename.values[index][1]
         temp = Image.open(name).convert('RGB')
         temp = temp.resize((self.size,self.size), resample=Image.BICUBIC)
-        return np.array(temp).astype(np.float32), name
+        return temp, name
 
     def __len__(self):
         return len(self.faces)

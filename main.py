@@ -205,7 +205,7 @@ for epoch in range(num_epochs):
             print(time.time()-start)
             start = time.time()
 
-        if i % 1000 == 0 or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+        if i % 2000 == 0 or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
             with torch.no_grad():
                 fake_A = netG_B2A(real_B).detach().cpu().numpy()
                 fake_B = netG_A2B(real_A).detach().cpu().numpy()
@@ -234,9 +234,10 @@ for epoch in range(num_epochs):
 
             print(simpath[0], path[0])
 
-        G_losses.append(loss_G.item())
-        D_losses.append((loss_D_A + loss_D_B).item())
-        G_GAN_losses.append((loss_GAN_A2B + loss_GAN_B2A).item())
+        if i % 100 == 0:
+            G_losses.append(loss_G.item())
+            D_losses.append((loss_D_A + loss_D_B).item())
+            G_GAN_losses.append((loss_GAN_A2B + loss_GAN_B2A).item())
 
     filename = savedir + 'cycleGAN' + str(epoch) + '.pth'
     state = {'state_dict': netG_B2A.state_dict()}
