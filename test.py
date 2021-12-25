@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
-import torchvision.transforms.functional as F
-import itertools
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 import sys
 
 # from nets.generator import MiniUnet as Generator
@@ -22,7 +19,6 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
 
 load = True
-size = 128
 path = '/edward-slow-vol/cycleGAN/cycle128/cycleGAN49.pth' # generator model is saved here
 
 netG = Generator().to(device)

@@ -58,6 +58,17 @@ class TestDataset(Dataset):
         self.faces = pd.read_csv(facespath)
         self.size = size
 
+    def data_aug(self):
+        transform_list = [
+            Transforms.ToTensor(),
+            Transforms.Normalize(
+                mean=np.array([0.5, 0.5, 0.5]),
+                std=np.array([0.5, 0.5, 0.5]),
+            ),
+        ]
+        custom_augmentation = Transforms.Compose(transform_list)
+        return custom_augmentation
+
     def load_image(self, filename, index):
         name = filename.values[index][1]
         temp = Image.open(name).convert('RGB')
@@ -68,6 +79,7 @@ class TestDataset(Dataset):
         return len(self.faces)
 
     def __getitem__(self, index):
+        transform = self.data_aug()
         faces, name = self.load_image(self.faces, index)
-        faces = normalize(faces)
+        faces = transform(faces)
         return faces, name

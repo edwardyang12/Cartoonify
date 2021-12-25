@@ -205,7 +205,7 @@ for epoch in range(num_epochs):
             print(time.time()-start)
             start = time.time()
 
-        if i % 2000 == 0 or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+        if i % 2000 == 0 or ((epoch == num_epochs-1) and (i == (len(dataloader)-1)*batch_size)):
             with torch.no_grad():
                 fake_A = netG_B2A(real_B).detach().cpu().numpy()
                 fake_B = netG_A2B(real_A).detach().cpu().numpy()
