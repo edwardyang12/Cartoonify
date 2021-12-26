@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, Response
 import torch
 from PIL import Image
 import io
 import numpy as np
-
+import os
+import cv2
 
 # from nets.generator import MiniUnet as Generator
 from nets.newgenerator import ResnetGenerator as Generator
@@ -17,6 +18,19 @@ checkpoint = torch.load(path, map_location=torch.device('cpu'))
 netG.load_state_dict(checkpoint['state_dict'])
 print('loaded successfully')
 netG.eval()
+
+camera = cv2.VideoCapture(0)
+def gen_frames():
+    while True:
+        success, frame = camera.read()  # read the camera frame
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+
 
 def transform_image(image_bytes):
     MEAN = 255 * np.array([0.5, 0.5, 0.5])
@@ -37,16 +51,27 @@ def generate(image_bytes):
 
 app = Flask(__name__)
 
-@app.route('/predict', methods=['POST'])
+@app.route('/', methods=['GET', 'POST'])
 def predict():
-    if request.method == 'POST':
-        # we will get the file from the request
-        file = request.files['file']
-        # convert that to bytes
-        img_bytes = file.read()
-        picture = generate(image_bytes=img_bytes)
+    if request.method=='GET':
+        return render_template('index.html', generated = '0')
 
-        return jsonify({'temp':picture})
+    if request.method == 'POST':
+        try:
+            # we will get the file from the request
+            file = request.files['file']
+            # convert that to bytes
+            img_bytes = file.read()
+            picture = generate(image_bytes=img_bytes)
+            return render_template('index.html', generated = str(picture))
+
+        except:
+            return render_template('index.html', generated = '2')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True,port=os.getenv('PORT',5000))
