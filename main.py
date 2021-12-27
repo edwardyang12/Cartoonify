@@ -42,6 +42,9 @@ if (device.type == 'cuda') and (ngpu > 1):
     netG_A2B = nn.DataParallel(netG_A2B, list(range(ngpu)))
     netG_B2A = nn.DataParallel(netG_B2A, list(range(ngpu)))
 
+netG_A2B.apply(weights_init)
+netG_B2A.apply(weights_init)
+
 netD_A = Discriminator().to(device)
 netD_B = Discriminator().to(device)
 
@@ -65,7 +68,7 @@ optimizer_D_B = torch.optim.Adam(netD_B.parameters(), lr=lr, betas=(0.5, 0.999))
 
 
 # Establish convention for real and fake labels during training
-real_label = 1.
+real_label = 0.9
 fake_label = 0.
 
 Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.Tensor
