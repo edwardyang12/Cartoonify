@@ -1,10 +1,12 @@
-from flask import Flask, jsonify, request, render_template, Response
+from flask import Flask, jsonify, request, render_template, Response, send_file
 import torch
 from PIL import Image
 import io
 import numpy as np
 import os
 import cv2
+import requests
+import base64
 
 # from nets.generator import MiniUnet as Generator
 from nets.newgenerator import ResnetGenerator as Generator
@@ -46,27 +48,53 @@ def transform_image(image_bytes):
 def generate(image_bytes):
     tensor = transform_image(image_bytes)
     outputs = netG.forward(tensor)
-    outputs = outputs.detach().numpy().tolist()
+    outputs = outputs.detach().numpy()[0]
     return outputs
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def predict():
+    res = "data:image/png;base64,"
     if request.method=='GET':
-        return render_template('index.html', generated = '0')
+        picture = np.zeros((32,32,3))
+        picture.fill(255)
+        ret, buffer = cv2.imencode('.jpg', picture)
+        frame = buffer.tobytes()
+        res+= str(base64.b64encode(frame))[2:]
+        res = res[:len(res)-1]
+        return render_template('index.html', result = 'initial', generated = res)
 
     if request.method == 'POST':
         try:
             # we will get the file from the request
             file = request.files['file']
-            # convert that to bytes
-            img_bytes = file.read()
-            picture = generate(image_bytes=img_bytes)
-            return render_template('index.html', generated = str(picture))
+            resp = requests.post("http://localhost:5000/gen_pic",
+                                 files={"file": file})
+            res+= str(resp.content)[2:]
+            res = res[:len(res)-1]
+            return render_template('index.html', result = 'success', generated = res)
 
         except:
-            return render_template('index.html', generated = '2')
+            picture = np.zeros((32,32,3))
+            picture.fill(255)
+            ret, buffer = cv2.imencode('.jpg', picture)
+            frame = buffer.tobytes()
+            res+= str(base64.b64encode(frame))[2:]
+            res = res[:len(res)-1]
+            return render_template('index.html', result = 'failure', generated = res)
+
+@app.route('/gen_pic', methods=['POST'])
+def gen_pic():
+    if request.method == 'POST':
+        file = request.files['file']
+        img_bytes = file.read()
+        picture = generate(img_bytes).transpose(1,2,0)
+        picture = np.uint8(((picture*0.5)+0.5)*255.)
+        ret, buffer = cv2.imencode('.jpg', picture)
+        frame = buffer.tobytes()
+        res = base64.b64encode(frame)
+        return res
 
 @app.route('/video_feed')
 def video_feed():
