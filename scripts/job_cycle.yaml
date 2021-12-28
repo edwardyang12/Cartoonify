@@ -20,7 +20,7 @@ spec:
             && pip install pandas
             && git clone https://github.com/edwardyang12/Cartoonify.git
             && cd Cartoonify
-            && python -u main.py 50 20 4 4 128 256 /edward-slow-vol/cycleGAN/cycle128_more/
+            && python -u main.py 50 20 4 4 128 256 /edward-slow-vol/cycleGAN/cycle128_nomode/
       "
       # 20 batch works for 256 but only 4 for 512
           resources:
