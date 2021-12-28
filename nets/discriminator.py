@@ -1,9 +1,10 @@
+import torch
 import torch.nn as nn
-from utils import MiniBatchDiscrimination
+from nets.utils import MiniBatchDiscrimination
 
 # final layer is one hot prediction
 class OrigDiscriminator(nn.Module):
-    def __init__(self, channels=3, feat_map=64, batch=50):
+    def __init__(self, channels=3, feat_map=64, batch=20):
         super(OrigDiscriminator, self).__init__()
         self.main = nn.Sequential(
             # input is (channels) x 512 x 512
@@ -38,7 +39,7 @@ class OrigDiscriminator(nn.Module):
 
 # final layer is patch prediction
 class PatchGAN(nn.Module):
-    def __init__(self, channels=3, feat_map=64, batch=50):
+    def __init__(self, channels=3, feat_map=64, batch=20):
         super(PatchGAN, self).__init__()
         self.main = nn.Sequential(
 
@@ -65,12 +66,14 @@ class PatchGAN(nn.Module):
     def forward(self, input):
         return self.main(input)
 
-# https://github.com/sanghviyashiitb/GANS-VanillaAndMinibatchDiscrimination/blob/master/minibatch_discrimination.py
+
 # final layer is patch prediction
 class PatchMiniBatch(nn.Module):
-    def __init__(self, channels=3, feat_map=64, batch=50):
-        super(PatchGAN, self).__init__()
-        self.mbd1 = MiniBatchDiscrimination(feat_map*4, feat_map*4, feat_map, batch) # insert before last layer
+    def __init__(self, channels=3, feat_map=64, batch=20):
+        super(PatchMiniBatch, self).__init__()
+
+        # 15,15 determined from the patch size
+        self.mbd1 = MiniBatchDiscrimination(feat_map*4, feat_map*4, feat_map*2, batch) # insert before last layer
         self.main = nn.Sequential(
             # input is actually (channels) x 64 x 64 patches
             nn.Conv2d(channels, feat_map, 4, 2, 1, bias=False),
@@ -91,8 +94,13 @@ class PatchMiniBatch(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
 
         )
-        self.out = nn.Conv2d(feat_map * 8, 3, 4, 1, 1, bias=False),
+        self.feat_map = feat_map
+        self.batch = batch
+        self.out = nn.Conv2d(feat_map * 8, 3, 4, 1, 1, bias=False)
 
     def forward(self, input):
         x = self.main(input)
-        return self.out(torch.cat((x,self.mbd1(x)),dim=1))
+        B,C,H,W = x.shape
+        mbd_layer = self.mbd1(torch.mean(x,dim=[2,3])).view(B,C,1,1)
+        mbd_layer = mbd_layer.expand(-1,-1,H,W)
+        return self.out(torch.cat((x,mbd_layer),dim=1))

@@ -30,16 +30,18 @@ def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv2d') != -1:
         nn.init.normal_(m.weight.data, 0.0, 0.05)
-        model.weight.data.normal_(0.0, 0.05)
-        model.bias.data.fill_(0)
+        if m.bias != None:
+            nn.init.constant_(m.bias.data, 0.0)
     elif classname.find('BatchNorm2d') != -1:
         nn.init.normal_(m.weight.data, 1.0, 0.05)
-        nn.init.constant_(m.bias.data, 0.0)
+        if m.bias != None:
+            nn.init.constant_(m.bias.data, 0.0)
     elif classname.find('ConvTranspose2d') != -1:
         nn.init.normal_(m.weight.data, 0.0, 0.05)
-        model.weight.data.normal_(0.0, 0.05)
-        model.bias.data.fill_(0)
+        if m.bias != None:
+            nn.init.constant_(m.bias.data, 0.0)
 
+# https://github.com/sanghviyashiitb/GANS-VanillaAndMinibatchDiscrimination/blob/master/minibatch_discrimination.py
 # reduce mode collapse by appending similarity value to discriminated outputs
 class MiniBatchDiscrimination(nn.Module):
 	def __init__(self, A, B, C, batch_size):
@@ -48,13 +50,13 @@ class MiniBatchDiscrimination(nn.Module):
 		self.out_size = B
 		self.row_size = C
 		self.N = batch_size
-		self.T = Parameter(torch.Tensor(A,B,C))
+		self.T = Parameter(torch.Tensor(A,B,C)).to("cuda")
 		self.reset_parameters()
 
 	def forward(self, x):
 		# Output matrices after matrix multiplication
 		M = x.mm(self.T.view(self.feat_num,self.out_size*self.row_size)).view(-1,self.out_size,self.row_size)
-		out = Variable(torch.zeros(self.N,self.out_size))
+		out = Variable(torch.zeros(self.N,self.out_size), requires_grad=True).to("cuda")
 		for k in range(self.N): # Not happy about this 'for' loop, but this is the best we could do using PyTorch IMO
 			c = torch.exp(-torch.sum(torch.abs(M[k,:]-M),2)) # exp(-L1 Norm of Rows difference)
 			if k != 0 and k != self.N -1:

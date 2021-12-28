@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import sys
 
 from nets.utils import ReplayBuffer, weights_init
-from nets.discriminator import PatchGAN as Discriminator
-# from nets.generator import MiniUnet as Generator
+from nets.discriminator import PatchMiniBatch as Discriminator
 from nets.newgenerator import ResnetGenerator as Generator
 from custom_dataset import CustomDataset
 
