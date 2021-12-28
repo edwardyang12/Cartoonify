@@ -44,8 +44,8 @@ if (device.type == 'cuda') and (ngpu > 1):
 netG_A2B.apply(weights_init)
 netG_B2A.apply(weights_init)
 
-netD_A = Discriminator(batch=batch_size).to(device)
-netD_B = Discriminator(batch=batch_size).to(device)
+netD_A = Discriminator(batch=batch_size/ngpu).to(device)
+netD_B = Discriminator(batch=batch_size/ngpu).to(device)
 
 if (device.type == 'cuda') and (ngpu > 1):
     netD_A = nn.DataParallel(netD_A, list(range(ngpu)))
