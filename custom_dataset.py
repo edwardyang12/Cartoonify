@@ -18,6 +18,7 @@ class CustomDataset(Dataset):
     def data_aug(self):
         transform_list = [
             Transforms.ToTensor(),
+            Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
             Transforms.ColorJitter(brightness=.2),
             Transforms.RandomHorizontalFlip(),
             Transforms.Normalize(
