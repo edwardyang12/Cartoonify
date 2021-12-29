@@ -10,10 +10,12 @@ import base64
 
 # from nets.generator import MiniUnet as Generator
 from nets.newgenerator import ResnetGenerator as Generator
+from face import face_detect
 
 size = 256
 path = './unparallel.pth' # generator model is saved here
 
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 netG = Generator()
 
 checkpoint = torch.load(path, map_location=torch.device('cpu'))
@@ -22,31 +24,60 @@ print('loaded successfully')
 netG.eval()
 
 camera = cv2.VideoCapture(0)
-def gen_frames():
+
+capture = False
+
+# TODO:
+# current pipeline is take whole image and generate from that
+# new pipeline: detect face and generate only on face and replace only face
+def gen_frames(modify=False):
     while True:
         success, frame = camera.read()  # read the camera frame
         if not success:
             break
         else:
-            ret, buffer = cv2.imencode('.jpg', frame)
+            if modify:
+                h,w,c = np.array(frame).shape
+                frame = generate(frame, file=False).transpose(1,2,0)
+                frame = np.uint8(((frame*0.5)+0.5)*255.)
+                frame = Image.fromarray(frame).resize((h,w), resample=Image.BICUBIC)
+                print("here")
+            ret, buffer = cv2.imencode('.jpg', np.array(frame))
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
 
+def take_pic():
+    while True:
+        success, frame = camera.read()  # read the camera frame
+        if not success:
+            break
+        else:
+            frame = np.array(frame)
+            frame = face_detect(frame, face_cascade)
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+            break
 
-def transform_image(image_bytes):
+
+def transform_image(image_bytes,file=True):
     MEAN = 255 * np.array([0.5, 0.5, 0.5])
     STD = 255 * np.array([0.5, 0.5, 0.5])
-
-    image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+    image = ""
+    if file:
+        image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+    else:
+        image = Image.fromarray(np.uint8(image_bytes)).convert('RGB')
     image = image.resize((size,size), resample=Image.BICUBIC)
     image = np.array(image).transpose(-1,0,1)
     image = (image - MEAN[:, None, None]) / STD[:, None, None]
     image = torch.tensor(image)
     return image.unsqueeze(0).type(torch.float32)
 
-def generate(image_bytes):
-    tensor = transform_image(image_bytes)
+def generate(image_bytes, file=True):
+    tensor = transform_image(image_bytes, file=file)
     outputs = netG.forward(tensor)
     outputs = outputs.detach().numpy()[0]
     return outputs
@@ -98,8 +129,14 @@ def gen_pic():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(take_pic(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/requests',methods=['POST'])
+def tasks():
+    if request.method == 'POST':
+        if request.form.get('click') == 'Capture':
+            capture = True
+    return None
 
 if __name__ == '__main__':
     app.run(debug=True,port=os.getenv('PORT',5000))
