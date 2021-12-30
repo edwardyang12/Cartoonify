@@ -55,7 +55,7 @@ class CustomDataset(Dataset):
 
         temp = random.randrange(0,len(self.cartoon))
         cartoon, rName = self.load_image(self.cartoon, temp, cartoon=True)
-        transform = self.data_aug()
+        transform = self.data_aug(cartoon=True)
         cartoon = transform(cartoon)
         return faces, name, cartoon, rName
 

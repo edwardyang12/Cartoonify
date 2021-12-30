@@ -86,8 +86,8 @@ elif patch== 64:
 
 def fakeAug():
     transform_list = [
-                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
-                Transforms.ColorJitter(brightness=.2),
+                # Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
+                # Transforms.ColorJitter(brightness=.2),
                 Transforms.RandomHorizontalFlip()
                 ]
     return Transforms.Compose(transform_list)
