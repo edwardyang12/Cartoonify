@@ -15,11 +15,16 @@ class CustomDataset(Dataset):
         self.cartoon = pd.read_csv(carpath)
         self.size = size
 
-    def data_aug(self):
+    def data_aug(self, cartoon=False):
         transform_list = [
             Transforms.ToTensor(),
-            Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
-            Transforms.ColorJitter(brightness=.2),
+        ]
+        if not cartoon:
+            transform_list += [
+                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
+                Transforms.ColorJitter(brightness=.2),
+            ]
+        transform_list += [
             Transforms.RandomHorizontalFlip(),
             Transforms.Normalize(
                 mean=np.array([0.5, 0.5, 0.5]),
