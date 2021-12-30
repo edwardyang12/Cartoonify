@@ -181,7 +181,6 @@ for epoch in range(num_epochs):
         else:
             cropped_fake_A = F.crop(fake_A.detach(), top, left, patch, patch)
         cropped_fake_A = fake_A_buffer.push_and_pop(cropped_fake_A)
-        cropped_fake_A = synth_aug(cropped_fake_A)
         pred_fake = netD_A(cropped_fake_A)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
 
