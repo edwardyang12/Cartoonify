@@ -15,8 +15,8 @@ from nets.discriminator import PatchMiniBatch as Discriminator
 from nets.newgenerator import ResnetGenerator as Generator
 from custom_dataset import CustomDataset
 
-lrG = 0.0002
-lrD = 0.0002
+lrG = 0.0001
+lrD = 0.0004
 num_epochs = int(sys.argv[1])
 batch_size = int(sys.argv[2])
 num_workers = int(sys.argv[3])

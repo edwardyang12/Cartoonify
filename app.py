@@ -40,8 +40,7 @@ def gen_frames(modify=False):
                 h,w,c = np.array(frame).shape
                 frame = generate(frame, file=False).transpose(1,2,0)
                 frame = np.uint8(((frame*0.5)+0.5)*255.)
-                frame = Image.fromarray(frame).resize((h,w), resample=Image.BICUBIC)
-                print("here")
+                frame = Image.fromarray(frame).resize((w,h), resample=Image.BICUBIC)
             ret, buffer = cv2.imencode('.jpg', np.array(frame))
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
@@ -54,12 +53,20 @@ def take_pic():
             break
         else:
             frame = np.array(frame)
-            frame = face_detect(frame, face_cascade)
+            frame, faces = face_detect(frame, face_cascade)
+            for face in faces:
+                x, y, w, h = face
+                crop_face = frame[y:y+h, x:x+w]
+                crop_face = generate(crop_face, file=False).transpose(1,2,0)
+                crop_face = np.uint8(((crop_face*0.5)+0.5)*255.)
+                crop_face = Image.fromarray(crop_face).resize((w,h), resample=Image.BICUBIC)
+
+                frame[y:y+h, x:x+w] = np.array(crop_face)
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-            break
+            cv2.waitKey(3000)
 
 
 def transform_image(image_bytes,file=True):
