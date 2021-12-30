@@ -39,10 +39,10 @@ class CustomDataset(Dataset):
         temp = Image.open(name).convert('RGB')
         if cartoon: # because the cartoon face has a lot of white space
             w, h = temp.size
-            val = random.uniform(.15,.20)
-            w_sub = w*val
-            h_sub = h*val
-            temp = temp.crop((w_sub,h_sub,w-w_sub,h-h_sub))
+            total = random.uniform(.3,.4)
+            left = random.uniform(.05,.35)
+            right = total-left
+            temp = temp.crop((w*left,h*left,w-w*right,h-h*right))
         temp = temp.resize((self.size,self.size), resample=Image.BICUBIC)
         return temp, name
 
