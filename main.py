@@ -19,7 +19,6 @@ lrG = 0.0001
 lrD = 0.0004
 num_epochs = int(sys.argv[1])
 batch_size = int(sys.argv[2])
-beta1 = 0.5
 num_workers = int(sys.argv[3])
 ngpu = int(sys.argv[4])
 patch = int(sys.argv[5])
@@ -85,12 +84,13 @@ elif patch== 128:
 elif patch== 64:
     out_size = 6
 
-transform_list = [
-            Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
-            Transforms.ColorJitter(brightness=.2),
-            Transforms.RandomHorizontalFlip()
-            ]
-synth_aug = Transforms.Compose(transform_list)
+def fakeAug():
+    transform_list = [
+                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
+                Transforms.ColorJitter(brightness=.2),
+                Transforms.RandomHorizontalFlip()
+                ]
+    return Transforms.Compose(transform_list)
 
 target_real = torch.full((batch_size,3,out_size,out_size), real_label, dtype=torch.float, device=device)
 target_fake = torch.full((batch_size,3,out_size,out_size), fake_label, dtype=torch.float, device=device)
@@ -174,6 +174,7 @@ for epoch in range(num_epochs):
         left = np.random.randint(0,patch)
         cropped_fake_A = F.crop(fake_A.detach(), top, left, patch, patch)
         cropped_fake_A = fake_A_buffer.push_and_pop(cropped_fake_A)
+        synth_aug = fakeAug()
         cropped_fake_A = synth_aug(cropped_fake_A)
         pred_fake = netD_A(cropped_fake_A)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
@@ -200,6 +201,7 @@ for epoch in range(num_epochs):
         left = np.random.randint(0,patch)
         cropped_fake_B = F.crop(fake_B.detach(), top, left, patch, patch)
         cropped_fake_B = fake_B_buffer.push_and_pop(cropped_fake_B)
+        synth_aug = fakeAug()
         cropped_fake_B = synth_aug(cropped_fake_B)
         pred_fake = netD_B(cropped_fake_B)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
