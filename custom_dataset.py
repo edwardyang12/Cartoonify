@@ -21,7 +21,7 @@ class CustomDataset(Dataset):
         ]
         if not cartoon:
             transform_list += [
-                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
+                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2.5)),
                 Transforms.ColorJitter(brightness=.5, contrast=.3, saturation=.3),
             ]
         transform_list += [

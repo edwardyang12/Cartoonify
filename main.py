@@ -104,7 +104,7 @@ for epoch in range(num_epochs):
     start = time.time()
     for i, data in enumerate(dataloader):
 
-        sigma = np.random.uniform(.1,2)
+        # sigma = np.random.uniform(.1,2)
         flip = random.random() <0.5
         brightness = np.random.uniform(.5,1.5)
         contrast = np.random.uniform(.7,1.3)
@@ -136,8 +136,8 @@ for epoch in range(num_epochs):
 
         # GAN loss
         fake_B = netG_A2B(real_A)
-        cropped_fake_B = F.gaussian_blur(fake_B, kernel_size=9, sigma=sigma)
-        cropped_fake_B = F.adjust_brightness(cropped_fake_B,brightness)
+        # cropped_fake_B = F.gaussian_blur(fake_B, kernel_size=9, sigma=sigma)
+        cropped_fake_B = F.adjust_brightness(fake_B,brightness)
         cropped_fake_B = F.adjust_contrast(cropped_fake_B,contrast)
         cropped_fake_B = F.adjust_saturation(cropped_fake_B,saturation)
         if flip:
@@ -205,8 +205,8 @@ for epoch in range(num_epochs):
         loss_D_real = criterion_GAN(pred_real, target_real)
 
         # Fake loss
-        cropped_fake_B = F.gaussian_blur(fake_B.detach(), kernel_size=9, sigma=sigma)
-        cropped_fake_B = F.adjust_brightness(cropped_fake_B,brightness)
+        # cropped_fake_B = F.gaussian_blur(fake_B.detach(), kernel_size=9, sigma=sigma)
+        cropped_fake_B = F.adjust_brightness(fake_B.detach(),brightness)
         cropped_fake_B = F.adjust_contrast(cropped_fake_B,contrast)
         cropped_fake_B = F.adjust_saturation(cropped_fake_B,saturation)
         if flip:
