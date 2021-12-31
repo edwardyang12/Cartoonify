@@ -131,11 +131,7 @@ for epoch in range(num_epochs):
         cropped_fake_B = F.adjust_brightness(cropped_fake_B,.2)
         if random.random() <0.5:
             cropped_fake_B = F.hflip(cropped_fake_B)
-<<<<<<< HEAD
         cropped_fake_B = F.crop(cropped_fake_B, top, left, patch, patch)
-=======
-        cropped_fake_B = F.crop(fake_B, top, left, patch, patch)
->>>>>>> f1a5303c9c3f5f67c5881f76e8d5ea7eb55cc7c0
         pred_fake = netD_B(cropped_fake_B)
         loss_GAN_A2B = criterion_GAN(pred_fake, target_real)
 
