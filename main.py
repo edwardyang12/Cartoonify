@@ -9,6 +9,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import sys
+import random
 
 from nets.utils import ReplayBuffer, weights_init
 from nets.discriminator import PatchMiniBatch as Discriminator
@@ -84,14 +85,6 @@ elif patch== 128:
 elif patch== 64:
     out_size = 6
 
-def fakeAug():
-    transform_list = [
-                # Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2)),
-                # Transforms.ColorJitter(brightness=.2),
-                Transforms.RandomHorizontalFlip()
-                ]
-    return Transforms.Compose(transform_list)
-
 target_real = torch.full((batch_size,3,out_size,out_size), real_label, dtype=torch.float, device=device)
 target_fake = torch.full((batch_size,3,out_size,out_size), fake_label, dtype=torch.float, device=device)
 
@@ -134,14 +127,23 @@ for epoch in range(num_epochs):
         fake_B = netG_A2B(real_A)
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_fake_B = F.crop(fake_B, top, left, patch, patch)
+        cropped_fake_B = F.gaussian_blur(fake_B, kernel_size=9, sigma=(0.1,2))
+        cropped_fake_B = F.adjust_brightness(cropped_fake_B,.2)
+        if random.random() <0.5:
+            cropped_fake_B = F.hflip(cropped_fake_B)
+        cropped_fake_B = F.crop(cropped_fake_B, top, left, patch, patch)
         pred_fake = netD_B(cropped_fake_B)
         loss_GAN_A2B = criterion_GAN(pred_fake, target_real)
 
         fake_A = netG_B2A(real_B)
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_fake_A = F.crop(fake_A, top, left, patch, patch)
+        cropped_fake_A = 0
+        if random.random() <0.5:
+            cropped_fake_A = F.hflip(fake_A)
+            cropped_fake_A = F.crop(cropped_fake_A, top, left, patch, patch)
+        else:
+            cropped_fake_A = F.crop(fake_A, top, left, patch, patch)
         pred_fake = netD_A(cropped_fake_A)
         loss_GAN_B2A = criterion_GAN(pred_fake, target_real)
 
@@ -172,10 +174,13 @@ for epoch in range(num_epochs):
         # Fake loss
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_fake_A = F.crop(fake_A.detach(), top, left, patch, patch)
+        cropped_fake_A = 0
+        if random.random() <0.5:
+            cropped_fake_A = F.hflip(fake_A.detach())
+            cropped_fake_A = F.crop(cropped_fake_A, top, left, patch, patch)
+        else:
+            cropped_fake_A = F.crop(fake_A.detach(), top, left, patch, patch)
         cropped_fake_A = fake_A_buffer.push_and_pop(cropped_fake_A)
-        synth_aug = fakeAug()
-        cropped_fake_A = synth_aug(cropped_fake_A)
         pred_fake = netD_A(cropped_fake_A)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
 
@@ -199,10 +204,12 @@ for epoch in range(num_epochs):
         # Fake loss
         top = np.random.randint(0,patch)
         left = np.random.randint(0,patch)
-        cropped_fake_B = F.crop(fake_B.detach(), top, left, patch, patch)
+        cropped_fake_B = F.gaussian_blur(fake_B.detach(), kernel_size=9, sigma=(0.1,2))
+        cropped_fake_B = F.adjust_brightness(cropped_fake_B,.2)
+        if random.random() <0.5:
+            cropped_fake_B = F.hflip(cropped_fake_B)
+        cropped_fake_B = F.crop(cropped_fake_B, top, left, patch, patch)
         cropped_fake_B = fake_B_buffer.push_and_pop(cropped_fake_B)
-        synth_aug = fakeAug()
-        cropped_fake_B = synth_aug(cropped_fake_B)
         pred_fake = netD_B(cropped_fake_B)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
 

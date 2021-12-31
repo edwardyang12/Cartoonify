@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: edward-cyclegan2  # Replace with something like "${USER_NAME}-{EXP_NAME}"
+  name: edward-cyclegan3  # Replace with something like "${USER_NAME}-{EXP_NAME}"
   namespace: ucsd-haosulab
 spec:
   ttlSecondsAfterFinished: 86400  # Wait one day to delete completed jobs
@@ -20,17 +20,17 @@ spec:
             && pip install pandas
             && git clone https://github.com/edwardyang12/Cartoonify.git
             && cd Cartoonify
-            && python -u main.py 50 20 4 4 128 256 /edward-slow-vol/cycleGAN/cycle128_final2/
+            && python -u main.py 50 20 4 4 128 256 /edward-slow-vol/cycleGAN/cycle128_final3/
       "
       # 20 batch works for 256 but only 4 for 512
           resources:
             requests:
               cpu: "4"
-              memory: "8Gi"
+              memory: "12Gi"
               nvidia.com/gpu: "4"
             limits:
               cpu: "5"
-              memory: "10Gi"
+              memory: "14Gi"
               nvidia.com/gpu: "4"
           volumeMounts:
             - name: dshm
