@@ -103,6 +103,17 @@ for epoch in range(num_epochs):
     # For each batch in the dataloader
     start = time.time()
     for i, data in enumerate(dataloader):
+
+        sigma = np.random.uniform(.1,2)
+        flip = random.random() <0.5
+        brightness = np.random.uniform(.5,1.5)
+        contrast = np.random.uniform(.7,1.3)
+        saturation = np.random.uniform(.7,1.3)
+        top_A = np.random.randint(0,patch)
+        left_A = np.random.randint(0,patch)
+        top_B = np.random.randint(0,patch)
+        left_B = np.random.randint(0,patch)
+
         i = i*batch_size
         simdata, simpath, data, path = data
 
@@ -125,25 +136,23 @@ for epoch in range(num_epochs):
 
         # GAN loss
         fake_B = netG_A2B(real_A)
-        top = np.random.randint(0,patch)
-        left = np.random.randint(0,patch)
-        cropped_fake_B = F.gaussian_blur(fake_B, kernel_size=9, sigma=(0.1,2))
-        cropped_fake_B = F.adjust_brightness(cropped_fake_B,.2)
-        if random.random() <0.5:
+        cropped_fake_B = F.gaussian_blur(fake_B, kernel_size=9, sigma=sigma)
+        cropped_fake_B = F.adjust_brightness(cropped_fake_B,brightness)
+        cropped_fake_B = F.adjust_contrast(cropped_fake_B,contrast)
+        cropped_fake_B = F.adjust_saturation(cropped_fake_B,saturation)
+        if flip:
             cropped_fake_B = F.hflip(cropped_fake_B)
-        cropped_fake_B = F.crop(cropped_fake_B, top, left, patch, patch)
+        cropped_fake_B = F.crop(cropped_fake_B, top_B, left_B, patch, patch)
         pred_fake = netD_B(cropped_fake_B)
         loss_GAN_A2B = criterion_GAN(pred_fake, target_real)
 
         fake_A = netG_B2A(real_B)
-        top = np.random.randint(0,patch)
-        left = np.random.randint(0,patch)
         cropped_fake_A = 0
-        if random.random() <0.5:
+        if flip:
             cropped_fake_A = F.hflip(fake_A)
-            cropped_fake_A = F.crop(cropped_fake_A, top, left, patch, patch)
+            cropped_fake_A = F.crop(cropped_fake_A, top_A, left_A, patch, patch)
         else:
-            cropped_fake_A = F.crop(fake_A, top, left, patch, patch)
+            cropped_fake_A = F.crop(fake_A, top_A, left_A, patch, patch)
         pred_fake = netD_A(cropped_fake_A)
         loss_GAN_B2A = criterion_GAN(pred_fake, target_real)
 
@@ -165,21 +174,17 @@ for epoch in range(num_epochs):
         optimizer_D_A.zero_grad()
 
         # Real loss
-        top = np.random.randint(0,patch)
-        left = np.random.randint(0,patch)
-        cropped_real_A = F.crop(real_A, top, left, patch, patch)
+        cropped_real_A = F.crop(real_A, top_A, left_A, patch, patch)
         pred_real = netD_A(cropped_real_A)
         loss_D_real = criterion_GAN(pred_real, target_real)
 
         # Fake loss
-        top = np.random.randint(0,patch)
-        left = np.random.randint(0,patch)
         cropped_fake_A = 0
-        if random.random() <0.5:
+        if flip:
             cropped_fake_A = F.hflip(fake_A.detach())
-            cropped_fake_A = F.crop(cropped_fake_A, top, left, patch, patch)
+            cropped_fake_A = F.crop(cropped_fake_A, top_A, left_A, patch, patch)
         else:
-            cropped_fake_A = F.crop(fake_A.detach(), top, left, patch, patch)
+            cropped_fake_A = F.crop(fake_A.detach(), top_A, left_A, patch, patch)
         cropped_fake_A = fake_A_buffer.push_and_pop(cropped_fake_A)
         pred_fake = netD_A(cropped_fake_A)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
@@ -195,20 +200,18 @@ for epoch in range(num_epochs):
         optimizer_D_B.zero_grad()
 
         # Real loss
-        top = np.random.randint(0,patch)
-        left = np.random.randint(0,patch)
-        cropped_real_B = F.crop(real_B, top, left, patch, patch)
+        cropped_real_B = F.crop(real_B, top_B, left_B, patch, patch)
         pred_real = netD_B(cropped_real_B)
         loss_D_real = criterion_GAN(pred_real, target_real)
 
         # Fake loss
-        top = np.random.randint(0,patch)
-        left = np.random.randint(0,patch)
-        cropped_fake_B = F.gaussian_blur(fake_B.detach(), kernel_size=9, sigma=(0.1,2))
-        cropped_fake_B = F.adjust_brightness(cropped_fake_B,.2)
-        if random.random() <0.5:
+        cropped_fake_B = F.gaussian_blur(fake_B.detach(), kernel_size=9, sigma=sigma)
+        cropped_fake_B = F.adjust_brightness(cropped_fake_B,brightness)
+        cropped_fake_B = F.adjust_contrast(cropped_fake_B,contrast)
+        cropped_fake_B = F.adjust_saturation(cropped_fake_B,saturation)
+        if flip:
             cropped_fake_B = F.hflip(cropped_fake_B)
-        cropped_fake_B = F.crop(cropped_fake_B, top, left, patch, patch)
+        cropped_fake_B = F.crop(cropped_fake_B, top_B, left_B, patch, patch)
         cropped_fake_B = fake_B_buffer.push_and_pop(cropped_fake_B)
         pred_fake = netD_B(cropped_fake_B)
         loss_D_fake = criterion_GAN(pred_fake, target_fake)

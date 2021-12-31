@@ -20,16 +20,16 @@ spec:
             && pip install pandas
             && git clone https://github.com/edwardyang12/Cartoonify.git
             && cd Cartoonify
-            && python -u main.py 50 20 4 4 128 256 /edward-slow-vol/cycleGAN/cycle128_final3/
+            && python -u main.py 75 20 16 4 128 256 /edward-slow-vol/cycleGAN/cycle128_final3/
       "
       # 20 batch works for 256 but only 4 for 512
           resources:
             requests:
-              cpu: "4"
+              cpu: "5"
               memory: "12Gi"
               nvidia.com/gpu: "4"
             limits:
-              cpu: "5"
+              cpu: "6"
               memory: "14Gi"
               nvidia.com/gpu: "4"
           volumeMounts:
