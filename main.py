@@ -79,7 +79,7 @@ input_B = Tensor(batch_size, 3, size, size)
 # (30,30) for 256, (14,14) for 128, (6,6) for 64
 out_size = 0
 with torch.no_grad():
-    a = torch.Tensor(int(batch_size/ngpu),3,patch,patch)
+    a = torch.Tensor(batch_size),3,patch,patch)
     out_size = netD_A(a).shape[2]
 
 target_real = torch.full((batch_size,3,out_size,out_size), real_label, dtype=torch.float, device=device)
