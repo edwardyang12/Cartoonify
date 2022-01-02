@@ -5,7 +5,6 @@ from collections import OrderedDict
 # from nets.generator import MiniUnet as Generator
 from nets.newgenerator import ResnetGenerator as Generator
 
-datapath = "./data/list_test_faces.csv"
 savedir = "/edward-slow-vol/cycleGAN/"
 
 device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")

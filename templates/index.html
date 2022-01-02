@@ -9,20 +9,23 @@
 <body>
   <div class="tester">
 		<h2>Upload</h2>
-		<form method="POST" enctype=multipart/form-data>
+		<form method="POST" enctype=multipart/form-data action="{{ url_for('predict') }}">
 			<input type="file" name="file">
 			<input type="submit" name="upload">
 		</form>
 	</div>
 	<div class="output">
+		<h2>Live Stream</h2>
 		<p>{{result}}</p>
-		<img src="{{ generated }}" alt="generated image">
+		<img src="{{ original }}" alt="original image" width="10%">
+		<img src="{{ generated }}" alt="generated image" width="10%">
 	</div>
 	<div class="video">
-		<!-- <form method="post" action="{{ url_for('tasks') }}">
+		<form method="POST" action="{{ url_for('tasks') }}">
 			<input type="submit" value="Capture" name="click"/>
-			</form> -->
-		<img src="{{ url_for('video_feed') }}" width="100%">
+			<input type="submit" value="Modify" name="click"/>
+			</form>
+		<img src="{{ url_for('video_feed') }}" width="80%">
 	</div>
 </body>
 </html>
