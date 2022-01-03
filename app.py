@@ -47,7 +47,7 @@ def take_pic():
                 for face in faces:
                     x, y, w, h = face
                     crop_face = frame[y:y+h, x:x+w]
-                    crop_face = generate(crop_face, (w+h)/2, file=False).transpose(1,2,0)
+                    crop_face = generate(crop_face, (w+h)/2).transpose(1,2,0)
                     crop_face = np.uint8(((crop_face*0.5)+0.5)*255.)
                     crop_face = Image.fromarray(crop_face).resize((w,h), resample=Image.BICUBIC)
                     frame = exclude_bg(np.array(crop_face), frame, face)
@@ -67,7 +67,7 @@ def exclude_bg(generated, original, loc):
     original[y:y+h, x:x+w] = original[y:y+h, x:x+w] * mask.astype(int) + generated * (np.logical_not(mask)).astype(int)
     return original
 
-def transform_image(image_bytes,size, file=True):
+def transform_image(image_bytes,size):
     MEAN = 255 * np.array([0.5, 0.5, 0.5])
     STD = 255 * np.array([0.5, 0.5, 0.5])
     image = Image.fromarray(np.uint8(image_bytes)).convert('RGB')
@@ -77,14 +77,14 @@ def transform_image(image_bytes,size, file=True):
     image = torch.tensor(image)
     return image.unsqueeze(0).type(torch.float32)
 
-def generate(image_bytes, size, file=True):
+def generate(image_bytes, size):
     val = 10000
     min = 0
     for i in sizes:
         if abs(size-i)<val:
             val = abs(size-i)
             min = i
-    tensor = transform_image(image_bytes, min, file=file)
+    tensor = transform_image(image_bytes, min)
     outputs = generators[min].forward(tensor)
     outputs = outputs.detach().numpy()[0]
     return outputs
@@ -152,7 +152,7 @@ def gen_pic():
         for face in faces:
             x, y, w, h = face
             crop_face = input_i[y:y+h, x:x+w]
-            crop_face = generate(crop_face, (w+h)/2, file=False).transpose(1,2,0)
+            crop_face = generate(crop_face, (w+h)/2).transpose(1,2,0)
             crop_face = np.uint8(((crop_face*0.5)+0.5)*255.)
             crop_face = Image.fromarray(crop_face).resize((w,h), resample=Image.BICUBIC)
             frame = exclude_bg(np.array(crop_face), input_i, face)

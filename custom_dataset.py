@@ -16,12 +16,14 @@ class CustomDataset(Dataset):
         self.size = size
 
     def data_aug(self, cartoon=False):
-        transform_list = [
-            Transforms.ToTensor(),
-        ]
+        transform_list = []
+        if not cartoon:
+            transform_list += [Transforms.RandomPosterize(random.randint(5, 8)),]
+        transform_list += [Transforms.ToTensor(),]
         if not cartoon:
             transform_list += [
-                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,2.5)),
+                Transforms.RandomAdjustSharpness(random.uniform(0.2, 2.2)),
+                Transforms.GaussianBlur(kernel_size=9, sigma=(0.1,3)),
                 Transforms.ColorJitter(brightness=.5, contrast=.3, saturation=.3),
             ]
         transform_list += [

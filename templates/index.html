@@ -9,17 +9,18 @@
 <body>
   <div class="tester">
 		<h2>Upload</h2>
+		<h3>CURRENTLY THERES A BUG IN THE CODE SO PLEASE FIRST PAUSE THE VIDEO STREAM BY CLICKING "CAPTURE" BEFORE SUBMITTING FILE</h3>
 		<form method="POST" enctype=multipart/form-data action="{{ url_for('predict') }}">
 			<input type="file" name="file">
 			<input type="submit" name="upload">
 		</form>
 	</div>
 	<div class="output">
-		<h2>Live Stream</h2>
 		<p>{{result}}</p>
 		<img src="{{ original }}" alt="original image" width="10%">
 		<img src="{{ generated }}" alt="generated image" width="10%">
 	</div>
+	<h2>Live Stream</h2>
 	<div class="video">
 		<form method="POST" action="{{ url_for('tasks') }}">
 			<input type="submit" value="Capture" name="click"/>

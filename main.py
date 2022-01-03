@@ -221,15 +221,17 @@ for epoch in range(num_epochs):
 
         optimizer_D_B.step()
 
-
         if i % 1000 == 0:
+            G_losses.append(loss_G.item())
+            D_losses.append((loss_D_A + loss_D_B).item())
+            G_GAN_losses.append((loss_GAN_A2B + loss_GAN_B2A).item())
             print("====== ", i, len(dataloader), epoch)
             print('loss_G: '+ str(loss_G.item()) + ' loss_G_identity: ' + str((loss_identity_A + loss_identity_B).item()) +  ' loss_G_GAN: ' + str((loss_GAN_A2B + loss_GAN_B2A).item()) + ' loss_G_cycle: ' +  str((loss_cycle_ABA + loss_cycle_BAB).item()))
             print('loss_D: ' + str((loss_D_A + loss_D_B).item()))
             print(time.time()-start)
             start = time.time()
 
-        if i % 2000 == 0 or ((epoch == num_epochs-1) and (i == (len(dataloader)-1)*batch_size)):
+        if i % 4000 == 0 or ((epoch == num_epochs-1) and (i == (len(dataloader)-1)*batch_size)):
             with torch.no_grad():
                 fake_A = netG_B2A(real_B).detach().cpu().numpy()
                 fake_B = netG_A2B(real_A).detach().cpu().numpy()
@@ -257,11 +259,6 @@ for epoch in range(num_epochs):
             img.save(savedir + 'fakeSim'+str(epoch)+'_'+str(i)+'.png')
 
             print(simpath[0], path[0])
-
-        if i % 100 == 0:
-            G_losses.append(loss_G.item())
-            D_losses.append((loss_D_A + loss_D_B).item())
-            G_GAN_losses.append((loss_GAN_A2B + loss_GAN_B2A).item())
 
     filename = savedir + 'cycleGAN' + str(epoch) + '.pth'
     state = {'state_dict': netG_B2A.state_dict()}
