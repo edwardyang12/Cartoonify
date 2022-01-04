@@ -13,7 +13,7 @@ import base64
 from nets.newgenerator import ResnetGenerator as Generator
 from face import face_detect
 
-sizes = [128,256] # generator sizes
+sizes = [128,192,256] # generator sizes
 path = "./generators/" # generator model is saved here
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')

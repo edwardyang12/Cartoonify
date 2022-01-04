@@ -25,8 +25,8 @@ ngpu = int(sys.argv[4])
 patch = int(sys.argv[5])
 size = int(sys.argv[6])
 
-datapath = "./data/list_faces.csv"
-simpath = "./data/list_cartoon.csv"
+datapath = "./data/list_faces_full.csv"
+simpath = "./data/list_cartoon_full.csv"
 savedir = sys.argv[7] # "/edward-slow-vol/cycleGAN/cycle/"
 
 dataset = CustomDataset(datapath, simpath, size)
