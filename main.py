@@ -32,7 +32,7 @@ savedir = sys.argv[7] # "/edward-slow-vol/cycleGAN/cycle/"
 dataset = CustomDataset(datapath, simpath, size)
 
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                         shuffle=True, num_workers=num_workers)
+                                         shuffle=True, num_workers=num_workers, drop_last=True)
 
 
 device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
